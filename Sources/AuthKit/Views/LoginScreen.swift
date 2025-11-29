@@ -1,5 +1,32 @@
 import SwiftUI
 
+/// A pre-built, state-aware login screen template.
+///
+/// `LoginScreen` provides a polished layout for authentication flows. It automatically subscribes
+/// to the `AuthManager` in the environment to handle UI states:
+/// * **Loading:** Blurs the content, disables interaction, and shows a loading spinner.
+/// * **Errors:** Automatically displays error messages from `AuthManager` in a red alert box.
+///
+/// You only need to provide the static texts (title/subtitle) and the list of login buttons.
+///
+/// ### Usage Example:
+/// ```swift
+/// LoginScreen(
+///     title: "Welcome Back",
+///     subtitle: "Please sign in to continue",
+///     roleType: AppRole.self
+/// ) {
+///     // Your custom buttons go here
+///     LogInButton(
+///         text: "Sign in with Google",
+///         color: .blue,
+///         icon: Image("google_logo")
+///     ) {
+///         authManager.login(...)
+///     }
+///
+/// }
+/// ```
 public struct LoginScreen<Role: UserRole, Content: View>: View {
 
     @EnvironmentObject var authManager: AuthManager<Role>
@@ -8,6 +35,13 @@ public struct LoginScreen<Role: UserRole, Content: View>: View {
     private let subtitle: String?
     private let buttonsContent: () -> Content
 
+    /// Creates a new login screen.
+    ///
+    /// - Parameters:
+    ///   - title: The main header text displayed at the top.
+    ///   - subtitle: Optional secondary text displayed below the title.
+    ///   - roleType: The concrete type of your `UserRole`. Pass `.self` to help the compiler.
+    ///   - content: A view builder containing the login buttons (usually `LogInButton`).
     public init(
         title: String,
         subtitle: String? = nil,

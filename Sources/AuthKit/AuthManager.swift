@@ -2,20 +2,46 @@ import AuthenticationServices
 import Combine
 import Foundation
 
+/// The central controller responsible for managing the authentication lifecycle and user session.
+///
+/// `AuthManager` handles the OAuth 2.0 and OpenID Connect (OIDC) flows via `ASWebAuthenticationSession`.
+/// It manages the state of the current user (`isLoggedIn`, `role`) and securely stores credentials using the `TokenManager`.
+///
+/// This class is generic over a `Role` type, allowing you to define your own role system (e.g., Admin, Student, Teacher).
+///
+/// ### Usage Example:
+/// ```swift
+/// @StateObject var authManager = AuthManager<AppRole>()
+///
+/// // Initiating login
+/// authManager.login(with: googleConfig) { data in
+///     // 1. Decode JSON
+///     guard let user = try? JSONDecoder().decode(GoogleUser.self, from: data) else { return nil }
+///
+///     // 2. Map to Role
+///     return user.email.contains("admin") ? .admin : .user
+/// }
+/// ```
 @MainActor
 public class AuthManager<Role: UserRole>: NSObject, ObservableObject,
     ASWebAuthenticationPresentationContextProviding
 {
 
+    /// Indicates whether a user is currently authenticated.
     @Published public private(set) var isLoggedIn: Bool = false
+    /// Indicates whether an authentication network request or flow is in progress.
+    /// Use this to show spinners or disable buttons.
     @Published public private(set) var isLoading: Bool = false
+    /// Contains a readable error message if the last operation failed. `nil` if no error occurred.
     @Published public private(set) var errorMessage: String?
+    /// The current role of the user. Defaults to `.guestRole` if not logged in.
     @Published public private(set) var role: Role = Role.guestRole
 
     private var accessToken: String?
 
     private let tokenManager = TokenManager()
 
+    /// Initializes the manager and immediately attempts to restore a session from the Keychain.
     public override init() {
         super.init()
         restoreSession()
@@ -35,6 +61,15 @@ public class AuthManager<Role: UserRole>: NSObject, ObservableObject,
         }
     }
 
+    /// Starts the OAuth 2.0 or OpenID Connect authentication flow.
+    ///
+    /// This method opens a system browser to authenticate the user. Upon success, it exchanges the authorization code
+    /// for an access token (and ID token if OIDC is used), fetches user data, and uses the `roleMapper` to determine the user's role.
+    ///
+    /// - Parameters:
+    ///   - config: The configuration object containing OAuth URLs, Client IDs, and scopes.
+    ///   - roleMapper: A closure that takes the raw user data (JSON `Data`) and returns a `Role`.
+    ///                 If this closure returns `nil`, the login is considered failed.
     public func login(
         with config: OAuthConfig,
         roleMapper: @escaping (Data) -> Role?
@@ -193,6 +228,7 @@ public class AuthManager<Role: UserRole>: NSObject, ObservableObject,
         }
     }
 
+    /// Logs the user out by clearing the session state and removing credentials from the Keychain.
     public func logout() {
         self.isLoggedIn = false
         self.accessToken = nil
@@ -217,10 +253,20 @@ public class AuthManager<Role: UserRole>: NSObject, ObservableObject,
 
 extension AuthManager {
 
+    /// Checks if the current user holds a specific role.
+    ///
+    /// - Parameter targetRole: The role to check against.
+    /// - Returns: `true` if the user has the specified role, otherwise `false`.
     public func hasRole(_ targetRole: Role) -> Bool {
         return self.role == targetRole
     }
 
+    /// Checks if the current user holds *any* of the specified roles.
+    ///
+    /// Useful for restricting access to a view that is shared by multiple high-level roles (e.g., both Admin and Editor).
+    ///
+    /// - Parameter roles: A set of allowed roles.
+    /// - Returns: `true` if the user's role is contained within the set.
     public func hasAnyRole(_ roles: Set<Role>) -> Bool {
         return roles.contains(self.role)
     }
