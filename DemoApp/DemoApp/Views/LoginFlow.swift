@@ -12,7 +12,7 @@ struct LoginFlow: View {
             subtitle: "Log in to the learning space",
             roleType: CourseRole.self
         ) {
-            SocialButton(
+            LogInButton(
                 text: "Sign in with Google",
                 color: .blue,
                 icon: Image("google_logo").renderingMode(.original)
