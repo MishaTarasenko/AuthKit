@@ -23,7 +23,7 @@ struct JWTHelper {
                 withPad: "=",
                 startingAt: 0
             )
-            base64 = base64 + padding
+            base64 += padding
         }
         return Data(base64Encoded: base64, options: .ignoreUnknownCharacters)
     }

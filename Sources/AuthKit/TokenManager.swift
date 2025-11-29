@@ -12,8 +12,7 @@ class TokenManager {
         try? keychain.set(token, key: tokenKey)
 
         if let roleData = try? JSONEncoder().encode(role),
-            let roleString = String(data: roleData, encoding: .utf8)
-        {
+            let roleString = String(data: roleData, encoding: .utf8) {
             try? keychain.set(roleString, key: roleKey)
         }
     }

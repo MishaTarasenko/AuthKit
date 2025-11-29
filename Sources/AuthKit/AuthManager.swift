@@ -24,8 +24,7 @@ import Foundation
 /// ```
 @MainActor
 public class AuthManager<Role: UserRole>: NSObject, ObservableObject,
-    ASWebAuthenticationPresentationContextProviding
-{
+    ASWebAuthenticationPresentationContextProviding {
 
     /// Indicates whether a user is currently authenticated.
     @Published public private(set) var isLoggedIn: Bool = false
@@ -56,7 +55,7 @@ public class AuthManager<Role: UserRole>: NSObject, ObservableObject,
                 self.role = savedRole
             } else {
                 // Token found, but role is missing. Fallback to guest.
-                // TODO: Consider fetching fresh user info from the API here.
+                // todo: Consider fetching fresh user info from the API here.
             }
         }
     }
@@ -85,7 +84,7 @@ public class AuthManager<Role: UserRole>: NSObject, ObservableObject,
             URLQueryItem(name: "client_id", value: config.clientId),
             URLQueryItem(name: "redirect_uri", value: config.redirectUri),
             URLQueryItem(name: "response_type", value: "code"),
-            URLQueryItem(name: "scope", value: config.scope),
+            URLQueryItem(name: "scope", value: config.scope)
         ]
 
         guard let finalAuthURL = components.url else {
@@ -156,7 +155,7 @@ public class AuthManager<Role: UserRole>: NSObject, ObservableObject,
             "client_id": config.clientId,
             "code": code,
             "grant_type": "authorization_code",
-            "redirect_uri": config.redirectUri,
+            "redirect_uri": config.redirectUri
         ]
 
         if let secret = config.clientSecret {
@@ -185,8 +184,7 @@ public class AuthManager<Role: UserRole>: NSObject, ObservableObject,
             var roleData: Data?
 
             if let idToken = tokenObj.idToken,
-                let decodedData = JWTHelper.decode(jwtToken: idToken)
-            {
+                let decodedData = JWTHelper.decode(jwtToken: idToken) {
                 roleData = decodedData
             } else {
                 var userRequest = URLRequest(url: config.userInfoUrl)
@@ -245,8 +243,7 @@ public class AuthManager<Role: UserRole>: NSObject, ObservableObject,
     }
 
     public func presentationAnchor(for session: ASWebAuthenticationSession)
-        -> ASPresentationAnchor
-    {
+        -> ASPresentationAnchor {
         return ASPresentationAnchor()
     }
 }

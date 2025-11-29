@@ -20,6 +20,10 @@ let package = Package(
             url: "https://github.com/kishikawakatsumi/KeychainAccess.git",
             from: "4.2.2"
         ),
+        .package(
+            url: "https://github.com/realm/SwiftLint.git",
+            from: "0.62.0"
+        ),
     ],
     targets: [
         // Targets are the basic building blocks of a package, defining a module or a test suite.
@@ -27,10 +31,16 @@ let package = Package(
         .target(
             name: "AuthKit",
             dependencies: ["KeychainAccess"],
+            plugins: [
+                .plugin(name: "SwiftLintBuildToolPlugin", package: "SwiftLint")
+            ],
         ),
         .testTarget(
             name: "AuthKitTests",
-            dependencies: ["AuthKit"]
+            dependencies: ["AuthKit"],
+            plugins: [
+                .plugin(name: "SwiftLintBuildToolPlugin", package: "SwiftLint")
+            ],
         ),
     ]
 )

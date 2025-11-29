@@ -4,5 +4,6 @@ excluded:
   
 disabled_rules:
   - line_length
+  - function_body_length
   
 opt_in_rules: []
